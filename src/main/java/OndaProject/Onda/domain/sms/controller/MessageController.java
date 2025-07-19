@@ -18,20 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class MessageController {
 
+
+
     private final MessageService messageService;
 
     @PostMapping("/send-verification")
     public CommonResponse<Boolean> sendVerificationSms(@RequestBody @Valid SmsRequest.PhoneNumber smsRequest){
 
         String phoneNumber = smsRequest.phoneNumber();
-
-        if(phoneNumber.isEmpty()){
-            throw new IllegalArgumentException("No Argument");
-        }
-
-        if (!phoneNumber.matches("^010\\d{8}$")) {
-            throw new IllegalArgumentException("유효하지 않은 휴대폰 번호 형식입니다.");
-        }
 
         messageService.sendVerifyCode(phoneNumber);
 

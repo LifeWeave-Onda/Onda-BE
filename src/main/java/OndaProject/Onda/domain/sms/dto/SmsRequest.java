@@ -8,7 +8,7 @@ public class SmsRequest{
 
         public record PhoneNumber(
                 @NotBlank
-                @Pattern(regexp = "^010\\d{8}$")
+                @Pattern(regexp = "^010\\d{8}$", message = "유효하지 않은 휴대폰 번호 형식입니다.")
                 String phoneNumber
         ){}
 
