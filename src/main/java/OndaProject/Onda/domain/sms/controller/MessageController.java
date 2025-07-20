@@ -1,6 +1,7 @@
 package OndaProject.Onda.domain.sms.controller;
 
 
+import OndaProject.Onda.domain.sms.api.MessageApi;
 import OndaProject.Onda.domain.sms.dto.SmsRequest;
 import OndaProject.Onda.domain.sms.service.MessageService;
 import OndaProject.Onda.global.response.CommonResponse;
@@ -16,9 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/sms")
 @Slf4j
-public class MessageController {
-
-
+public class MessageController implements MessageApi {
 
     private final MessageService messageService;
 
@@ -29,7 +28,7 @@ public class MessageController {
 
         messageService.sendVerifyCode(phoneNumber);
 
-        return CommonResponse.ok(true);
+        return CommonResponse.ok(true,"인증번호 발송 성공");
 
 
     }
@@ -37,8 +36,8 @@ public class MessageController {
     @PostMapping("/verify-code")
     public CommonResponse<Boolean> verifyCode(@RequestBody SmsRequest.VerifyCode verifyCode){
 
-        boolean result = messageService.verifyCode(verifyCode.phoneNumber(),verifyCode.code());
-        return CommonResponse.ok(result);
+        messageService.verifyCode(verifyCode.phoneNumber(),verifyCode.code());
+        return CommonResponse.ok(true);
 
     }
 }

@@ -1,6 +1,8 @@
 package OndaProject.Onda.domain.sms.service;
 
 
+import OndaProject.Onda.global.exception.CustomException;
+import OndaProject.Onda.global.exception.ExceptionCode;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.sdk.NurigoApp;
@@ -60,7 +62,6 @@ public class MessageService {
 
         try {
             log.info("SMS 인증번호 발송 시도: phoneNumber={}", phoneNumber);
-
             sendSms(smsSenderNumber, phoneNumber, message);
 
             String redisKey = REDIS_KEY_PREFIX + phoneNumber;
@@ -70,7 +71,7 @@ public class MessageService {
 
         } catch (Exception e) {
             log.error("SMS 인증번호 발송 실패: phoneNumber={}, error={}", phoneNumber, e.getMessage(), e);
-            throw e;
+            throw new CustomException(ExceptionCode.SMS_SEND_FAILED);
         }
     }
 
@@ -87,8 +88,7 @@ public class MessageService {
     }
 
 
-    public boolean verifyCode(String phoneNumber, String inputCode) {
-
+    public void verifyCode(String phoneNumber, String inputCode) {
         log.info("인증번호 검증 시도: phoneNumber={}, inputCode={}", phoneNumber, inputCode);
 
         String redisKey = REDIS_KEY_PREFIX + phoneNumber;
@@ -96,17 +96,16 @@ public class MessageService {
 
         if (storedCode == null) {
             log.warn("Redis 에 저장된 인증번호 없음: phoneNumber={}", phoneNumber);
-            return false;
+            throw new CustomException(ExceptionCode.VERIFICATION_CODE_NOT_FOUND);
         }
 
-        boolean isValid = inputCode.equals(storedCode);
-        if (isValid) {
-            stringRedisTemplate.delete(redisKey);
-            log.info("인증번호 검증 성공: phoneNumber={}", phoneNumber);
-        } else {
+        if (!inputCode.equals(storedCode)) {
             log.warn("인증번호 검증 실패: phoneNumber={}", phoneNumber);
+            throw new CustomException(ExceptionCode.VERIFICATION_CODE_MISMATCH);
         }
-        return isValid;
+
+        stringRedisTemplate.delete(redisKey);
+        log.info("인증번호 검증 성공: phoneNumber={}", phoneNumber);
     }
 
 }
